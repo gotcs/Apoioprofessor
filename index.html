@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="256x256" href="favicon.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apoio ao Professor</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- jsPDF for real PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .bg-gradient-light {
+            background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 50%, #faf5ff 100%);
+        }
+        .dark .bg-gradient-light {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #064e3b 100%);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-light text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300 custom-scrollbar">
+
+    <!-- HEADER -->
+    <header class="bg-slate-900 text-slate-100 shadow-md sticky top-0 z-50 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Left: Live Date & Time -->
+            <div class="flex items-center space-x-3 text-xs sm:text-sm text-slate-300">
+                <div class="p-2 bg-slate-800 rounded-xl border border-slate-700 shadow-inner flex items-center space-x-2">
+                    <i class="fa-regular fa-clock text-blue-400"></i>
+                    <span id="live-clock" class="font-medium tracking-wide">--:--:--</span>
+                </div>
+                <div class="hidden md:block p-2 bg-slate-800 rounded-xl border border-slate-700 shadow-inner">
+                    <i class="fa-regular fa-calendar text-emerald-400 mr-1.5"></i>
+                    <span id="live-date" class="font-medium">--/--/----</span>
+                </div>
+            </div>
+
+            <!-- Center: Portal Title & Icon -->
+            <div class="flex items-center space-x-3 text-center cursor-pointer" onclick="switchTab('inicio')">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30 transform hover:scale-105 transition-transform">
+                    <i class="fa-solid fa-graduation-cap text-lg sm:text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base sm:text-xl tracking-tight text-white">Apoio ao Professor</h1>
+                    <p class="text-[10px] sm:text-xs text-blue-300 font-medium">Ensino Fundamental I • BNCC</p>
+                </div>
+            </div>
+
+            <!-- Right: Theme Toggle & Portal Badge -->
+            <div class="flex items-center space-x-3">
+                <div class="hidden lg:flex flex-col text-right">
+                    <span class="text-xs font-semibold text-slate-200">Portal Pedagógico</span>
+                    <span class="text-[10px] text-emerald-400 font-medium"><i class="fa-solid fa-circle text-[8px] mr-1"></i> BNCC 2026 Ativa</span>
+                </div>
+                <button onclick="toggleDarkMode()" aria-label="Alternar Tema" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-yellow-400 shadow transition-colors">
+                    <i id="theme-icon" class="fa-solid fa-moon text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION CAPSULES -->
+    <nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-20 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex items-center justify-start sm:justify-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
+                <button onclick="switchTab('inicio')" id="nav-inicio" class="nav-capsule px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shrink-0 bg-blue-600 text-white shadow-md shadow-blue-500/25">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Início & BNCC</span>
+                </button>
+                <button onclick="switchTab('1ano')" id="nav-1ano" class="nav-capsule px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-child"></i>
+                    <span>1º Ano</span>
+                </button>
+                <button onclick="switchTab('2ano')" id="nav-2ano" class="nav-capsule px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-child-reaching"></i>
+                    <span>2º Ano</span>
+                </button>
+                <button onclick="switchTab('3ano')" id="nav-3ano" class="nav-capsule px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>3º Ano</span>
+                </button>
+                <button onclick="switchTab('4ano')" id="nav-4ano" class="nav-capsule px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>4º Ano</span>
+                </button>
+                <button onclick="switchTab('5ano')" id="nav-5ano" class="nav-capsule px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-award"></i>
+                    <span>5º Ano</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- TAB 1: INÍCIO / GERAL -->
+        <section id="content-inicio" class="tab-content space-y-8 animate-fadeIn">
+            <!-- Hero Banner with Illustration Concept -->
+            <div class="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl p-6 sm:p-10 text-white shadow-2xl">
+                <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-chalkboard-user text-[260px]"></i>
+                </div>
+                <div class="max-w-3xl relative z-10 space-y-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-md text-white border border-white/20">
+                        <i class="fa-solid fa-star text-yellow-300 mr-1.5"></i> Base Nacional Comum Curricular
+                    </span>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight">Planejamento Pedagógico Inteligente para o Ensino Fundamental I</h2>
+                    <p class="text-sm sm:text-base text-blue-100 leading-relaxed">
+                        O portal <strong>Apoio ao Professor</strong> foi desenvolvido para otimizar a rotina docente, oferecendo sequências didáticas estruturadas, códigos BNCC, sugestões de atividades lúdicas e orientações metodológicas do 1º ao 5º ano.
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-3">
+                        <button onclick="switchTab('1ano')" class="px-5 py-2.5 bg-white text-blue-700 font-bold text-sm rounded-xl shadow-lg hover:bg-blue-50 transition transform hover:-translate-y-0.5">
+                            Explorar Anos Escolares <i class="fa-solid fa-arrow-right ml-1.5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white">Objetivo do Portal</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Apoiar o educador na elaboração de planos de aula alinhados às 10 Competências Gerais da BNCC, garantindo equidade, qualidade e foco no desenvolvimento integral da criança.
+                    </p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-compass"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white">Como Utilizar</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Selecione a série desejada nos botões superiores (1º ao 5º ano). Escolha a área de conhecimento/matéria, utilize o filtro de busca por tema e explore propostas com download instantâneo de PDF.
+                    </p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 space-y-3">
+                    <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <h3 class="font-bold text-lg text-slate-900 dark:text-white">Organização Curricular</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Conteúdos segmentados por ano letivo, contemplando Língua Portuguesa, Matemática, Ciências, História, Geografia, Arte, Educação Física e Ensino Religioso.
+                    </p>
+                </div>
+            </div>
+
+            <!-- BNCC General Competencies Accordion / Info Box -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Diretrizes da BNCC para o Ensino Fundamental I</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Anos Iniciais (6 a 10 anos de idade)</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600 dark:text-slate-300">
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-2">
+                        <h4 class="font-bold text-slate-900 dark:text-white flex items-center"><i class="fa-solid fa-check text-blue-500 mr-2"></i> Alfabetização e Letramento</h4>
+                        <p class="text-xs leading-relaxed">Foco central nos dois primeiros anos (1º e 2º ano) para assegurar que todas as crianças se alfabetizem plenamente, ampliando as práticas de leitura e escrita nos anos seguintes.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-2">
+                        <h4 class="font-bold text-slate-900 dark:text-white flex items-center"><i class="fa-solid fa-check text-emerald-500 mr-2"></i> Pensamento Científico e Crítico</h4>
+                        <p class="text-xs leading-relaxed">Estímulo à curiosidade investigativa em Ciências, Geografia e História, incentivando o aluno a formular perguntas, testar hipóteses e compreender o meio social e natural.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-2">
+                        <h4 class="font-bold text-slate-900 dark:text-white flex items-center"><i class="fa-solid fa-check text-purple-500 mr-2"></i> Raciocínio Lógico-Matemático</h4>
+                        <p class="text-xs leading-relaxed">Resolução de problemas, compreensão de sistemas de numeração, geometria e estatística básica adaptada ao cotidiano infantil.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-2">
+                        <h4 class="font-bold text-slate-900 dark:text-white flex items-center"><i class="fa-solid fa-check text-amber-500 mr-2"></i> Empatia e Cooperação</h4>
+                        <p class="text-xs leading-relaxed">Desenvolvimento socioemocional, valorização da diversidade cultural brasileira e respeito às diferenças através da Arte, Educação Física e Ensino Religioso.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DYNAMIC YEAR CONTAINER (Will be populated by JavaScript for 1º to 5º ano) -->
+        <div id="dynamic-grade-container"></div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 mt-12 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-slate-400 space-y-3 sm:space-y-0">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-graduation-cap text-blue-600 text-base"></i>
+                <span class="font-semibold text-slate-700 dark:text-slate-300">Apoio ao Professor &copy; 2026</span>
+                <span>• Alinhado à BNCC</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span>Plataforma Pedagógica Interativa</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span class="text-emerald-600 dark:text-emerald-400 font-medium">Sistema Online</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- APPLICATION DATA & JAVASCRIPT -->
+    <script>
+        // --- LIVE CLOCK & DATE ---
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('pt-BR');
+            const dateString = now.toLocaleDateString('pt-BR', { weekday: 'short', year: 'numeric', month: '2-digit', day: '2-digit' });
+            
+            const clockEl = document.getElementById('live-clock');
+            const dateEl = document.getElementById('live-date');
+            if (clockEl) clockEl.innerText = timeString;
+            if (dateEl) dateEl.innerText = dateString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- DARK MODE TOGGLE ---
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.className = 'fa-solid fa-moon text-sm text-yellow-500';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.add('dark');
+                icon.className = 'fa-solid fa-sun text-sm text-yellow-400';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        // Check saved theme
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('theme-icon').className = 'fa-solid fa-sun text-sm text-yellow-400';
+        }
+
+        // --- CURRICULAR DATABASE (BNCC 1º ao 5º Ano) ---
+        const portalData = {
+            "1ano": {
+                titulo: "1º Ano do Ensino Fundamental",
+                subtitulo: "Foco central: Alfabetização, Letramento e Construção do Sistema Numérico",
+                guiaBncc: "No 1º ano, o processo de alfabetização é o eixo articulador de todas as aprendizagens. A BNCC propõe o domínio progressivo do sistema de escrita alfabética, o reconhecimento dos números naturais até 100, a exploração do espaço e do tempo no cotidiano, e o desenvolvimento da empatia e convivência em grupo.",
+                materias: [
+                    {
+                        id: "portugues",
+                        nome: "Língua Portuguesa",
+                        icone: "fa-book-open",
+                        cor: "blue",
+                        conteudos: [
+                            {
+                                id: "p1-1",
+                                tema: "Reconhecimento do Alfabeto e Consciência Fonológica",
+                                area: "Língua Portuguesa",
+                                objetivo: "Distinguir as letras do alfabeto de outros sinais gráficos e compreender correspondências entre fonemas e grafemas.",
+                                habilidades: "Identificar fonemas e sua representação por letras.",
+                                codigoBncc: "EF01LP02",
+                                sugestao: "Dinâmica da caixa surpresa com objetos cujos nomes iniciem com a letra estudada, cantiga de roda com palmas para contagem de sílabas.",
+                                orientacoes: "Trabalhar com nomes próprios dos alunos e palavras significativas do cotidiano da turma.",
+                                recursos: "Cartletas com letras móveis, tampinhas ilustradas, música infantil.",
+                                aplicacao: "Em roda de conversa inicial (20 min) seguida de oficina de recorte e colagem de palavras (30 min)."
+                            },
+                            {
+                                id: "p1-2",
+                                tema: "Leitura de Palavras e Pequenas Frases",
+                                area: "Língua Portuguesa",
+                                objetivo: "Ler palavras e pequenos textos com autonomia e fluência adequada ao nível inicial.",
+                                habilidades: "Ler e compreender palavras e frases.",
+                                codigoBncc: "EF01LP10",
+                                sugestao: "Criação de cartazes de combinados da sala com leitura diária coletiva.",
+                                orientacoes: "Utilizar o método silábico aliado ao construtivista para garantir significado.",
+                                recursos: "Cartolinas, canetas coloridas, crachás de identificação.",
+                                aplicacao: "Trabalho em duplas produtivas com apoio do professor."
+                            }
+                        ]
+                    },
+                    {
+                        id: "matematica",
+                        nome: "Matemática",
+                        icone: "fa-calculator",
+                        cor: "emerald",
+                        conteudos: [
+                            {
+                                id: "m1-1",
+                                tema: "Contagem e Sistema de Numeração (Até 50)",
+                                area: "Matemática",
+                                objetivo: "Contar de maneira exata ou aproximada, organizando quantidades em coleções.",
+                                habilidades: "Utilizar números naturais como indicador de quantidade.",
+                                codigoBncc: "EF01MA01",
+                                sugestao: "Contagem de palitos de picolé agrupados em feixes de 10 (material dourado lúdico).",
+                                orientacoes: "Valorizar o registro pictórico e numérico das contagens feitas pelos alunos.",
+                                recursos: "Palitos, tampas de garrafa PET, blocos lógicos.",
+                                aplicacao: "Atividade prática manipulativa em grupos de 4 alunos."
+                            }
+                        ]
+                    },
+                    {
+                        id: "ciencia",
+                        nome: "Ciências",
+                        icone: "fa-seedling",
+                        cor: "green",
+                        conteudos: [
+                            {
+                                id: "c1-1",
+                                tema: "Corpo Humano e Hábitos de Higiene",
+                                area: "Ciências",
+                                objetivo: "Identificar partes do corpo humano e compreender a importância da higiene pessoal.",
+                                habilidades: "Discutir a importância da higiene para a manutenção da saúde.",
+                                codigoBncc: "EF01CI03",
+                                sugestao: "Teatro de fantoches sobre a lavagem correta das mãos e escovação dos dentes.",
+                                orientacoes: "Relacionar os hábitos de higiene com o bem-estar e prevenção de doenças.",
+                                recursos: "Fantoches, escova de dente gigante de demonstração, pia pedagógica.",
+                                aplicacao: "Aula interativa com demonstração prática seguida de registro em desenho."
+                            }
+                        ]
+                    },
+                    {
+                        id: "historia",
+                        nome: "História",
+                        icone: "fa-landmark",
+                        cor: "amber",
+                        conteudos: [
+                            {
+                                id: "h1-1",
+                                tema: "A Minha História e a Convivência Familiar",
+                                area: "História",
+                                objetivo: "Reconhecer a própria história e a importância da família e da escola.",
+                                habilidades: "Identificar a relação de parentesco e convivência.",
+                                codigoBncc: "EF01HI01",
+                                sugestao: "Construção da 'Árvore Genealógica' ou 'Linha do Tempo do Bebê até a Escola'.",
+                                orientacoes: "Solicitar fotos antigas e relatos prévios dos familiares para resgate de memórias.",
+                                recursos: "Fotos impressas, papel craft, cola, tesoura sem ponta.",
+                                aplicacao: "Exposição dos trabalhos na sala de aula para compartilhamento."
+                            }
+                        ]
+                    },
+                    {
+                        id: "geografia",
+                        nome: "Geografia",
+                        icone: "fa-earth-americas",
+                        cor: "cyan",
+                        conteudos: [
+                            {
+                                id: "g1-1",
+                                tema: "O Lugar onde Vivo: Escola e Moradia",
+                                area: "Geografia",
+                                objetivo: "Descrever características observadas nos lugares de vivência (moradia e escola).",
+                                habilidades: "Comparar diferentes moradias e espaços de convivência.",
+                                codigoBncc: "EF01GE01",
+                                sugestao: "Maquete simples da sala de aula utilizando caixas de fósforo e papelão.",
+                                orientacoes: "Trabalhar conceitos de orientação espacial básica (perto, longe, em cima, embaixo).",
+                                recursos: "Caixas diversas, tintas, massinha de modelar.",
+                                aplicacao: "Construção coletiva orientada pelo professor."
+                            }
+                        ]
+                    }
+                ]
+            },
+            "2ano": {
+                titulo: "2º Ano do Ensino Fundamental",
+                subtitulo: "Foco central: Consolidação da Alfabetização, Operações Básicas e Ampliação do Mundo Social",
+                guiaBncc: "No 2º ano, consolida-se a alfabetização plena, permitindo textos mais longos e coesos. Em Matemática, introduzem-se a adição e subtração com reagrupamento e a multiplicação por ideia de soma de parcelas iguais. Em Ciências e Humanidades, investiga-se o tempo cronológico e a comunidade.",
+                materias: [
+                    {
+                        id: "portugues",
+                        nome: "Língua Portuguesa",
+                        icone: "fa-book-open",
+                        cor: "blue",
+                        conteudos: [
+                            {
+                                id: "p2-1",
+                                tema: "Produção de Pequenas Narrativas (Contos e Fábulas)",
+                                area: "Língua Portuguesa",
+                                objetivo: "Escrever, com autonomia ou apoio, pequenos textos narrativos com estrutura de início, meio e fim.",
+                                habilidades: "Planejar e produzir textos instrucionais e narrativos.",
+                                codigoBncc: "EF02LP12",
+                                sugestao: "Reescrita coletiva de uma fábula conhecida com alteração do final.",
+                                orientacoes: "Estimular o uso de pontuação básica (ponto final e exclamação).",
+                                recursos: "Livros de fábulas ilustrados, folha de redação pautada ampliada.",
+                                aplicacao: "Produção escrita em etapas com revisão do professor."
+                            }
+                        ]
+                    },
+                    {
+                        id: "matematica",
+                        nome: "Matemática",
+                        icone: "fa-calculator",
+                        cor: "emerald",
+                        conteudos: [
+                            {
+                                id: "m2-1",
+                                tema: "Adição e Subtração com Material Dourado",
+                                area: "Matemática",
+                                objetivo: "Resolver e elaborar problemas de adição e subtração com números de até três ordens.",
+                                habilidades: "Construir fatos fundamentais da adição e subtração.",
+                                codigoBncc: "EF02MA05",
+                                sugestao: "Jogo do 'Vai Um' utilizando cubinhos e barras do material dourado.",
+                                orientacoes: "Trabalhar o algoritmo convencional associado à manipulação concreta.",
+                                recursos: "Material dourado, cartões com operações.",
+                                aplicacao: "Atividade em pequenos grupos com resolução de desafios."
+                            }
+                        ]
+                    },
+                    {
+                        id: "ciencia",
+                        nome: "Ciências",
+                        icone: "fa-seedling",
+                        cor: "green",
+                        conteudos: [
+                            {
+                                id: "c2-1",
+                                tema: "Plantas: Ciclo de Vida e Necessidades",
+                                area: "Ciências",
+                                objetivo: "Identificar as principais partes de uma planta e o que é necessário para seu crescimento (água, luz, solo).",
+                                habilidades: "Descrever o ciclo vital de plantas.",
+                                codigoBncc: "EF02CI06",
+                                sugestao: "Plantio de feijão no algodão em copinho transparente.",
+                                orientacoes: "Acompanhar o desenvolvimento diário com registro em diário de bordo ilustrado.",
+                                recursos: "Copos plásticos, algodão, grãos de feijão, água.",
+                                aplicacao: "Observação diária por 15 dias com roda de comentários."
+                            }
+                        ]
+                    }
+                ,
+                    {
+                        id: "historia",
+                        nome: "História",
+                        icone: "fa-landmark",
+                        cor: "amber",
+                        conteudos: []
+                    },
+                    {
+                        id: "geografia",
+                        nome: "Geografia",
+                        icone: "fa-earth-americas",
+                        cor: "cyan",
+                        conteudos: []
+                    }
+                ]
+            },
+            "3ano": {
+                titulo: "3º Ano do Ensino Fundamental",
+                subtitulo: "Foco central: Transição para a Complexidade Textual, Multiplicação e Patrimônio Histórico",
+                guiaBncc: "O 3º ano marca a transição para leituras autônomas mais complexas e textos informativos. Em Matemática, o foco recai sobre a multiplicação e divisão. Em História e Geografia, amplia-se o horizonte para o estudo do município e formação histórica local.",
+                materias: [
+                    {
+                        id: "portugues",
+                        nome: "Língua Portuguesa",
+                        icone: "fa-book-open",
+                        cor: "blue",
+                        conteudos: [
+                            {
+                                id: "p3-1",
+                                tema: "Leitura e Compreensão de Textos Informativos e Notícias",
+                                area: "Língua Portuguesa",
+                                objetivo: "Localizar informações explícitas em textos jornalísticos infantis e informativos.",
+                                habilidades: "Ler e compreender textos informativos e notícias curtas.",
+                                codigoBncc: "EF03LP11",
+                                sugestao: "Criação de um 'Jornal da Turma' com notícias sobre acontecimentos da escola.",
+                                orientacoes: "Analisar a estrutura da notícia (título, subtítulo, corpo do texto).",
+                                recursos: "Jornais impressos infantis, cartolinas, tesoura.",
+                                aplicacao: "Oficina de redação jornalística em duplas."
+                            }
+                        ]
+                    },
+                    {
+                        id: "matematica",
+                        nome: "Matemática",
+                        icone: "fa-calculator",
+                        cor: "emerald",
+                        conteudos: [
+                            {
+                                id: "m3-1",
+                                tema: "Introdução à Multiplicação por Soma de Parcelas Iguais",
+                                area: "Matemática",
+                                objetivo: "Compreender o conceito de multiplicação como adição de parcelas iguais e matrizes ordenadas.",
+                                habilidades: "Resolver problemas envolvendo multiplicação.",
+                                codigoBncc: "EF03MA07",
+                                sugestao: "Uso de tabuleiros de ovos e feijões para formar fileiras e colunas multiplicativas.",
+                                orientacoes: "Conectar a ideia de multiplicação com o arranjo retangular.",
+                                recursos: "Caixas de ovos vazias, sementes ou grãos.",
+                                aplicacao: "Jogo prático de tabuada viva em equipes."
+                            }
+                        ]
+                    },
+                    {
+                        id: "historia",
+                        nome: "História",
+                        icone: "fa-landmark",
+                        cor: "amber",
+                        conteudos: [
+                            {
+                                id: "h3-1",
+                                tema: "A História do Município e Seus Patrimônios",
+                                area: "História",
+                                objetivo: "Identificar marcos históricos, monumentos e patrimônios culturais do município.",
+                                habilidades: "Conhecer a história da cidade e suas transformações ao longo do tempo.",
+                                codigoBncc: "EF03HI07",
+                                sugestao: "Pesquisa fotográfica sobre praças e ruas antigas da cidade.",
+                                orientacoes: "Promover debate sobre a preservação do patrimônio histórico local.",
+                                recursos: "Fotos antigas de arquivo municipal, projetor multimídia.",
+                                aplicacao: "Apresentação de cartazes comparativos 'Antes e Depois'."
+                            }
+                        ]
+                    }
+                ,
+                    {
+                        id: "ciencia",
+                        nome: "Ciências",
+                        icone: "fa-seedling",
+                        cor: "green",
+                        conteudos: []
+                    },
+                    {
+                        id: "geografia",
+                        nome: "Geografia",
+                        icone: "fa-earth-americas",
+                        cor: "cyan",
+                        conteudos: []
+                    }
+                ]
+            },
+            "4ano": {
+                titulo: "4º Ano do Ensino Fundamental",
+                subtitulo: "Foco central: Frações, Ecossistemas, Mapas e Gêneros Textuais Avançados",
+                guiaBncc: "No 4º ano, aprofundam-se os conceitos de frações e números decimais em Matemática. Em Ciências, estudam-se cadeias alimentares e ecossistemas. Em Geografia, mapas temáticos e regionalização. Em Português, crônicas e argumentação.",
+                materias: [
+                    {
+                        id: "portugues",
+                        nome: "Língua Portuguesa",
+                        icone: "fa-book-open",
+                        cor: "blue",
+                        conteudos: [
+                            {
+                                id: "p4-1",
+                                tema: "Produção de Crônicas e Textos Narrativos Complexos",
+                                area: "Língua Portuguesa",
+                                objetivo: "Escrever crônicas a partir de situações cotidianas, empregando diálogos e marcadores temporais.",
+                                habilidades: "Planejar e produzir textos narrativos ficcionais com elementos de diálogo.",
+                                codigoBncc: "EF04LP09",
+                                sugestao: "Leitura de crônicas de autores renomados adaptados para crianças e reescrita de um caso inusitado.",
+                                orientacoes: "Enfatizar o uso correto do discurso direto (travessão e dois-pontos).",
+                                resources: "Livros de crônicas infantis, folhas de produção.",
+                                aplicacao: "Oficina literária em sala com leitura em voz alta."
+                            }
+                        ]
+                    },
+                    {
+                        id: "matematica",
+                        nome: "Matemática",
+                        icone: "fa-calculator",
+                        cor: "emerald",
+                        conteudos: [
+                            {
+                                id: "m4-1",
+                                tema: "Frações: Significado, Leitura e Representação",
+                                area: "Matemática",
+                                objetivo: "Reconhecer frações unitárias mais usuais (1/2, 1/3, 1/4, 1/5, 1/10 e 1/100) associadas a partes de wholes.",
+                                habilidades: "Identificar frações como representação de partes de um todo.",
+                                codigoBncc: "EF04MA09",
+                                sugestao: "Uso de barras de chocolate de mentirinha ou pizzas de papelão recortadas para divisão fracionária.",
+                                orientacoes: "Trabalhar o conceito visual de numerador e denominador.",
+                                recursos: "Círculos de papel colorido divididos em partes iguais.",
+                                aplicacao: "Atividade prática de montagem de frações em duplas."
+                            }
+                        ]
+                    },
+                    {
+                        id: "ciencia",
+                        nome: "Ciências",
+                        icone: "fa-seedling",
+                        cor: "green",
+                        conteudos: [
+                            {
+                                id: "c4-1",
+                                tema: "Cadeias Alimentares e Fluxo de Energia",
+                                area: "Ciências",
+                                objetivo: "Identificar produtores, consumidores e decompositores nas cadeias alimentares.",
+                                habilidades: "Analisar as relações alimentares entre os seres vivos em diferentes ecossistemas.",
+                                codigoBncc: "EF04CI04",
+                                sugestao: "Construção de um 'Teia da Vida' com novelo de lã conectando animais e plantas.",
+                                orientacoes: "Discutir o impacto da extinção de uma espécie na cadeia ecológica.",
+                                recursos: "Novelo de lã, cartões com imagens de animais, plantas e fungos.",
+                                aplicacao: "Dinâmica em roda com todos os alunos conectados por fios de lã."
+                            }
+                        ]
+                    }
+                ,
+                    {
+                        id: "historia",
+                        nome: "História",
+                        icone: "fa-landmark",
+                        cor: "amber",
+                        conteudos: []
+                    },
+                    {
+                        id: "geografia",
+                        nome: "Geografia",
+                        icone: "fa-earth-americas",
+                        cor: "cyan",
+                        conteudos: []
+                    }
+                ]
+            },
+            "5ano": {
+                titulo: "5º Ano do Ensino Fundamental",
+                subtitulo: "Foco central: Síntese dos Anos Iniciais, Operações com Decimais, Cidadania e Astronomia",
+                guiaBncc: "O 5º ano coroa o ciclo dos Anos Iniciais. Exige autonomia avançada na leitura crítica de textos argumentativos, resolução de problemas complexos com números decimais e porcentagem, compreensão do sistema solar, e história das migrações e cidadania no Brasil.",
+                materias: [
+                    {
+                        id: "portugues",
+                        nome: "Língua Portuguesa",
+                        icone: "fa-book-open",
+                        cor: "blue",
+                        conteudos: [
+                            {
+                                id: "p5-1",
+                                tema: "Artigo de Opinião e Argumentação Infantil",
+                                area: "Língua Portuguesa",
+                                objetivo: "Planejar e produzir artigos de opinião defendendo ponto de vista sobre temas do cotidiano escolar ou social.",
+                                habilidades: "Escrever textos argumentativos com clareza de posicionamento e justificativas.",
+                                codigoBncc: "EF05LP03",
+                                sugestao: "Debate regrado sobre o uso de celulares na escola seguido de produção de manifesto escrito.",
+                                orientacoes: "Ensinar a fundamentar argumentos com exemplos e dados concretos.",
+                                recursos: "Cartolinas, pincéis, folhas de rascunho.",
+                                aplicacao: "Aula de debate (30 min) e produção escrita individual (30 min)."
+                            }
+                        ]
+                    },
+                    {
+                        id: "matematica",
+                        nome: "Matemática",
+                        icone: "fa-calculator",
+                        cor: "emerald",
+                        conteudos: [
+                            {
+                                id: "m5-1",
+                                tema: "Operações com Números Decimais e Sistema Monetário",
+                                area: "Matemática",
+                                objetivo: "Resolver e elaborar problemas envolvendo adição e subtração de números decimais e porcentagens simples.",
+                                habilidades: "Calcular porcentagens e operar com números decimais no contexto de compras.",
+                                codigoBncc: "EF05MA12",
+                                sugestao: "Simulação de um 'Mercadinho na Sala de Aula' com produtos rotulados com preços e troco em dinheiro fictício.",
+                                orientacoes: "Enfatizar o alinhamento da vírgula nas operações de adição e subtração com decimais.",
+                                recursos: "Dinheiro de mentirinha, embalagens vazias de supermercado, calculadoras.",
+                                aplicacao: "Atividade prática em estações de compra e venda simulada."
+                            }
+                        ]
+                    },
+                    {
+                        id: "ciencia",
+                        nome: "Ciências",
+                        icone: "fa-seedling",
+                        cor: "green",
+                        conteudos: [
+                            {
+                                id: "c5-1",
+                                tema: "Terra e Universo: Movimentos da Terra e Constelações",
+                                area: "Ciências",
+                                objetivo: "Identificar os movimentos de rotação e translação da Terra e sua relação com o dia, a noite e as estações do ano.",
+                                habilidades: "Descrever os movimentos da Terra e seus efeitos perceptíveis.",
+                                codigoBncc: "EF05CI11",
+                                sugestao: "Maquete móvel do sistema Sol-Terra-Lua utilizando esfera de isopor e lanterna.",
+                                orientacoes: "Esclarecer mitos comuns sobre os movimentos astronômicos.",
+                                recursos: "Bolas de isopor, palitos de churrasco, lanterna, tinta.",
+                                aplicacao: "Experimento em sala escura com lanterna demonstrando o dia e a noite."
+                            }
+                        ]
+                    },
+                    {
+                        id: "historia",
+                        nome: "História",
+                        icone: "fa-landmark",
+                        cor: "amber",
+                        conteudos: [
+                            {
+                                id: "h5-1",
+                                tema: "Povos Indígenas, Africanos e a Formação da Cultura Brasileira",
+                                area: "História",
+                                objetivo: "Analisar a formação da população brasileira a partir dos fluxos migratórios indígenas, africanos e europeus.",
+                                habilidades: "Descrever processos migratórios e a contribuição cultural dos diferentes povos.",
+                                codigoBncc: "EF05HI08",
+                                sugestao: "Exposição cultural culinária e artística com pesquisas sobre as origens das palavras e costumes.",
+                                orientacoes: "Valorizar a Lei 10.639/03 sobre a história e cultura afro-brasileira e indígena.",
+                                recursos: "Livros paradidáticos, cartazes, músicas tradicionais.",
+                                aplicacao: "Pesquisa em grupo e apresentação de painéis."
+                            }
+                        ]
+                    },
+                    {
+                        id: "geografia",
+                        nome: "Geografia",
+                        icone: "fa-earth-americas",
+                        cor: "cyan",
+                        conteudos: [
+                            {
+                                id: "g5-1",
+                                tema: "O Brasil: território, regiões e características geográficas",
+                                area: "Geografia",
+                                objetivo: "Reconhecer as características do território brasileiro, suas regiões e a diversidade de paisagens.",
+                                habilidades: "Analisar aspectos naturais, sociais e econômicos das regiões brasileiras.",
+                                codigoBncc: "EF05GE",
+                                sugestao: "Consulta ao material didático de Geografia do 5º ano, com leitura de mapas e comparação entre regiões.",
+                                orientacoes: "Utilizar mapas, imagens e atividades de localização para relacionar os conteúdos ao território brasileiro.",
+                                recursos: "Atlas geográfico, mapas do Brasil e material didático.",
+                                aplicacao: "Leitura orientada de mapas e identificação das características das regiões brasileiras."
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        let currentActiveGrade = null;
+        let currentSelectedSubject = null;
+        let currentSearchQuery = "";
+
+        // --- NAVIGATION CONTROLLER ---
+        function switchTab(tabId) {
+            // Update capsule buttons style
+            document.querySelectorAll('.nav-capsule').forEach(btn => {
+                btn.className = "nav-capsule px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shrink-0 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700";
+            });
+
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.className = "nav-capsule px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 flex items-center space-x-2 shrink-0 bg-blue-600 text-white shadow-md shadow-blue-500/25";
+            }
+
+            // Hide/Show content
+            const inicioContent = document.getElementById('content-inicio');
+            const dynamicContainer = document.getElementById('dynamic-grade-container');
+
+            if (tabId === 'inicio') {
+                inicioContent.classList.remove('hidden');
+                dynamicContainer.innerHTML = '';
+                currentActiveGrade = null;
+                currentSelectedSubject = null;
+            } else {
+                inicioContent.classList.add('hidden');
+                currentActiveGrade = tabId;
+                currentSelectedSubject = null;
+                currentSearchQuery = "";
+                renderGradeView(tabId);
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- RENDER GRADE VIEW ---
+        function renderGradeView(gradeKey) {
+            const gradeData = portalData[gradeKey];
+            const container = document.getElementById('dynamic-grade-container');
+            if (!gradeData) return;
+
+            let html = `
+                <div class="space-y-8 animate-fadeIn">
+                    <!-- Grade Header Banner -->
+                    <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div class="space-y-2">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                <i class="fa-solid fa-graduation-cap mr-1.5"></i> Diretrizes BNCC
+                            </span>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">${gradeData.titulo}</h2>
+                            <p class="text-sm text-slate-300 max-w-2xl">${gradeData.subtitulo}</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-4 rounded-2xl border border-slate-700/80 text-xs text-slate-300 max-w-md leading-relaxed">
+                            <strong class="text-white block mb-1"><i class="fa-solid fa-circle-info text-blue-400 mr-1"></i> Guia Pedagógico da Série:</strong>
+                            ${gradeData.guiaBncc}
+                        </div>
+                    </div>
+
+                    <!-- Subjects Selection Panel -->
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center">
+                                <i class="fa-solid fa-layer-group text-blue-600 mr-2"></i> Matérias e Áreas de Conhecimento
+                            </h3>
+                            <span class="text-xs text-slate-500 dark:text-slate-400">Clique em uma matéria para ver o planejamento</span>
+                        </div>
+
+                        <!-- Subjects Grid -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4" id="subjects-grid">
+            `;
+
+            gradeData.materias.forEach(mat => {
+                const isSelected = currentSelectedSubject === mat.id;
+                const coresMateria = {
+                    portugues: { gradiente: 'from-blue-500 to-indigo-600', borda: 'hover:border-blue-400 dark:hover:border-blue-500', texto: 'text-blue-600 dark:text-blue-400' },
+                    matematica: { gradiente: 'from-emerald-500 to-teal-600', borda: 'hover:border-emerald-400 dark:hover:border-emerald-500', texto: 'text-emerald-600 dark:text-emerald-400' },
+                    ciencia: { gradiente: 'from-green-500 to-lime-600', borda: 'hover:border-green-400 dark:hover:border-green-500', texto: 'text-green-600 dark:text-green-400' },
+                    historia: { gradiente: 'from-amber-500 to-orange-600', borda: 'hover:border-amber-400 dark:hover:border-amber-500', texto: 'text-amber-600 dark:text-amber-400' },
+                    geografia: { gradiente: 'from-cyan-500 to-sky-600', borda: 'hover:border-cyan-400 dark:hover:border-cyan-500', texto: 'text-cyan-600 dark:text-cyan-400' }
+                };
+                const corMateria = coresMateria[mat.id] || coresMateria.portugues;
+                html += `
+                    <button onclick="selectSubject('${gradeKey}', '${mat.id}')" class="group text-left p-4 rounded-2xl transition-all duration-200 border ${isSelected ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/25 ring-2 ring-blue-400' : `bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-800 ${corMateria.borda} hover:shadow-md`}">
+                        <div class="w-10 h-10 rounded-xl mb-3 flex items-center justify-center text-lg text-white shadow-md bg-gradient-to-br ${corMateria.gradiente}">
+                            <i class="fa-solid ${mat.icone}"></i>
+                        </div>
+                        <h4 class="font-bold text-sm tracking-tight mb-1">${mat.nome}</h4>
+                        <span class="text-[11px] ${isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}">${mat.conteudos.length} proposta(s)</span>
+                    </button>
+                `;
+            });
+
+            html += `
+                        </div>
+                    </div>
+
+                    <!-- Subject Content Container -->
+                    <div id="subject-content-area" class="mt-8">
+            `;
+
+            // If a subject is already selected, render it, otherwise show prompt
+            if (currentSelectedSubject) {
+                html += renderSubjectDetailHtml(gradeKey, currentSelectedSubject);
+            } else {
+                const estilosMateria = {
+                    portugues: { cor: 'blue', gradiente: 'from-blue-500 to-indigo-600', simbolo: 'fa-book-open' },
+                    matematica: { cor: 'emerald', gradiente: 'from-emerald-500 to-teal-600', simbolo: 'fa-calculator' },
+                    ciencia: { cor: 'green', gradiente: 'from-green-500 to-lime-600', simbolo: 'fa-seedling' },
+                    historia: { cor: 'amber', gradiente: 'from-amber-500 to-orange-600', simbolo: 'fa-landmark' },
+                    geografia: { cor: 'cyan', gradiente: 'from-cyan-500 to-sky-600', simbolo: 'fa-earth-americas' }
+                };
+                const nomeSerie = gradeData.titulo.replace(' do Ensino Fundamental', '');
+                html += `
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6">
+                        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-widest text-blue-600 dark:text-blue-400">Guia de aprendizagem</span>
+                                <h4 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">Conheça as matérias do ${nomeSerie}</h4>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Veja os conteúdos de cada área e selecione uma matéria para explorar o planejamento.</p>
+                            </div>
+                            <span class="text-xs text-slate-400"><i class="fa-solid fa-book-open mr-1"></i> ${gradeData.materias.length} áreas de conhecimento</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                            ${gradeData.materias.map(mat => {
+                                const estilo = estilosMateria[mat.id] || estilosMateria.portugues;
+                                const primeiroConteudo = mat.conteudos && mat.conteudos.length ? mat.conteudos[0] : null;
+                                const foco = primeiroConteudo ? primeiroConteudo.tema : 'Conteúdos e propostas de aprendizagem';
+                                const resumo = primeiroConteudo && primeiroConteudo.objetivo ? primeiroConteudo.objetivo : `Explore as propostas de ${mat.nome} para esta etapa escolar.`;
+                                return `
+                                    <button type="button" onclick="selectSubject('${gradeKey}', '${mat.id}')"
+                                        class="group relative overflow-hidden text-left rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/70 hover:bg-white dark:hover:bg-slate-800 hover:border-${estilo.cor}-400 dark:hover:border-${estilo.cor}-500 hover:shadow-xl transition-all duration-200 hover:-translate-y-1 p-5">
+                                        <div class="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r ${estilo.gradiente}"></div>
+                                        <div class="flex items-center justify-between gap-3 mb-4">
+                                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br ${estilo.gradiente} text-white flex items-center justify-center text-xl shadow-lg">
+                                                <i class="fa-solid ${estilo.simbolo}"></i>
+                                            </div>
+                                            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-${estilo.cor}-600 dark:group-hover:text-${estilo.cor}-400">${nomeSerie}</span>
+                                        </div>
+                                        <h5 class="font-extrabold text-base text-slate-900 dark:text-white mb-2">${mat.nome}</h5>
+                                        <p class="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">${foco}</p>
+                                        <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-300 min-h-[4.5rem]">${resumo}</p>
+                                        <div class="mt-5 pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                                            <span class="text-xs font-bold text-${estilo.cor}-700 dark:text-${estilo.cor}-300">Abrir matéria</span>
+                                            <span class="w-8 h-8 rounded-full bg-${estilo.cor}-100 dark:bg-${estilo.cor}-900/40 text-${estilo.cor}-700 dark:text-${estilo.cor}-300 flex items-center justify-center group-hover:bg-${estilo.cor}-600 group-hover:text-white transition-colors">
+                                                <i class="fa-solid fa-arrow-right text-xs"></i>
+                                            </span>
+                                        </div>
+                                    </button>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // --- SELECT SUBJECT ---
+        // Todos os materiais ficam na mesma pasta do index.html e seguem:
+        // materia_serie.html (ex.: portugues_2-ano.html).
+        function selectSubject(gradeKey, subjectId) {
+            const ano = gradeKey.replace('ano', '-ano');
+            const arquivo = `${subjectId}_${ano}.html`;
+            const gradeData = portalData[gradeKey];
+            const materia = gradeData?.materias.find(m => m.id === subjectId);
+            const nomes = {
+                portugues: 'Língua Portuguesa', matematica: 'Matemática',
+                ciencia: 'Ciências', historia: 'História', geografia: 'Geografia'
+            };
+            const viewer = document.getElementById('material-viewer');
+            const frame = document.getElementById('material-frame');
+            document.getElementById('material-viewer-title').textContent =
+                `${nomes[subjectId] || materia?.nome || 'Material'} • ${gradeData?.titulo || gradeKey}`;
+            frame.src = arquivo;
+            viewer.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // --- FILTER BY SEARCH QUERY ---
+        function filterContents(gradeKey, subjectId, query) {
+            currentSearchQuery = query.toLowerCase();
+            const container = document.getElementById(`proposals-list-${subjectId}`);
+            if (!container) return;
+
+            const gradeData = portalData[gradeKey];
+            const subject = gradeData.materias.find(m => m.id === subjectId);
+            if (!subject) return;
+
+            const filtered = subject.conteudos.filter(c => 
+                c.tema.toLowerCase().includes(currentSearchQuery) || 
+                c.objetivo.toLowerCase().includes(currentSearchQuery) ||
+                c.codigoBncc.toLowerCase().includes(currentSearchQuery)
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+                        <i class="fa-solid fa-magnifying-glass text-2xl mb-2 text-slate-400"></i>
+                        <p class="text-sm font-medium">Nenhum conteúdo encontrado para "${query}".</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filtered.forEach((prop, idx) => {
+                html += renderProposalCard(prop, gradeKey, subjectId, idx);
+            });
+            container.innerHTML = html;
+        }
+
+        // --- RENDER SUBJECT DETAIL HTML ---
+        function renderSubjectDetailHtml(gradeKey, subjectId) {
+            const gradeData = portalData[gradeKey];
+            const subject = gradeData.materias.find(m => m.id === subjectId);
+            if (!subject) return '';
+
+            let html = `
+                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-800 space-y-6 animate-fadeIn">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-xl shadow-md shadow-blue-500/20">
+                                <i class="fa-solid ${subject.icone}"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white">${subject.nome}</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">${gradeData.titulo} • Propostas Pedagógicas BNCC</p>
+                            </div>
+                        </div>
+
+                        <!-- Search Input by Theme -->
+                        <div class="relative w-full sm:w-80">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                            </span>
+                            <input type="text" oninput="filterContents('${gradeKey}', '${subject.id}', this.value)" value="${currentSearchQuery}" placeholder="Pesquisar por tema ou código BNCC..." class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-100 placeholder-slate-400">
+                        </div>
+                    </div>
+
+                    <!-- Proposals List Container -->
+                    <div id="proposals-list-${subject.id}" class="space-y-4">
+            `;
+
+            const filtered = subject.conteudos.filter(c => 
+                c.tema.toLowerCase().includes(currentSearchQuery) || 
+                c.objetivo.toLowerCase().includes(currentSearchQuery) ||
+                c.codigoBncc.toLowerCase().includes(currentSearchQuery)
+            );
+
+            if (filtered.length === 0) {
+                html += `
+                    <div class="p-8 text-center text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
+                        <i class="fa-solid fa-magnifying-glass text-2xl mb-2 text-slate-400"></i>
+                        <p class="text-sm font-medium">Nenhum conteúdo encontrado para sua busca.</p>
+                    </div>
+                `;
+            } else {
+                filtered.forEach((prop, idx) => {
+                    html += renderProposalCard(prop, gradeKey, subject.id, idx);
+                });
+            }
+
+            html += `
+                    </div>
+                </div>
+            `;
+            return html;
+        }
+
+        // --- RENDER PROPOSAL CARD WITH ACCORDION & PDF BUTTON ---
+        function renderProposalCard(prop, gradeKey, subjectId, idx) {
+            const cardId = `accordion-${subjectId}-${idx}`;
+            return `
+                <div class="border border-slate-200 dark:border-slate-700/80 rounded-2xl overflow-hidden bg-slate-50/50 dark:bg-slate-800/40 transition-all hover:border-blue-400">
+                    <!-- Card Header / Summary -->
+                    <div onclick="toggleAccordion('${cardId}')" class="p-5 flex items-center justify-between cursor-pointer select-none">
+                        <div class="space-y-1 pr-4">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300">
+                                    ${prop.codigoBncc}
+                                </span>
+                                <span class="text-xs font-medium text-slate-500 dark:text-slate-400">${prop.area}</span>
+                            </div>
+                            <h4 class="font-bold text-base text-slate-900 dark:text-white">${prop.tema}</h4>
+                        </div>
+                        <div class="flex items-center space-x-3 shrink-0">
+                            <button onclick="event.stopPropagation(); generatePDF('${prop.codigoBncc}', '${prop.tema.replace(/'/g, "\\'")}', '${prop.objetivo.replace(/'/g, "\\'")}', '${prop.sugestao.replace(/'/g, "\\'")}', '${prop.orientacoes.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center space-x-1.5 shadow transition transform hover:scale-105" title="Baixar Conteúdo em PDF">
+                                <i class="fa-solid fa-file-pdf"></i>
+                                <span class="hidden sm:inline">Baixar PDF</span>
+                            </button>
+                            <div id="icon-${cardId}" class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-transform duration-200">
+                                <i class="fa-solid fa-chevron-down text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expandable Details (Accordion) -->
+                    <div id="${cardId}" class="hidden px-5 pb-5 pt-2 border-t border-slate-200 dark:border-slate-700/60 bg-white dark:bg-slate-900 space-y-4 text-sm animate-fadeIn">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                            <div class="p-4 rounded-xl bg-blue-50/50 dark:bg-slate-800/60 border border-blue-100 dark:border-slate-700 space-y-1">
+                                <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center"><i class="fa-solid fa-bullseye mr-1.5"></i> Objetivo de Aprendizagem</span>
+                                <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">${prop.objetivo}</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-purple-50/50 dark:bg-slate-800/60 border border-purple-100 dark:border-slate-700 space-y-1">
+                                <span class="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center"><i class="fa-solid fa-bookmark mr-1.5"></i> Habilidades BNCC</span>
+                                <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">${prop.habilidades}</p>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-emerald-50/50 dark:bg-slate-800/60 border border-emerald-100 dark:border-slate-700 space-y-1">
+                            <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider flex items-center"><i class="fa-solid fa-lightbulb mr-1.5"></i> Sugestão de Atividade Prática</span>
+                            <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">${prop.sugestao}</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="p-4 rounded-xl bg-amber-50/50 dark:bg-slate-800/60 border border-amber-100 dark:border-slate-700 space-y-1">
+                                <span class="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center"><i class="fa-solid fa-chalkboard-user mr-1.5"></i> Orientações para o Professor</span>
+                                <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">${prop.orientacoes}</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-cyan-50/50 dark:bg-slate-800/60 border border-cyan-100 dark:border-slate-700 space-y-1">
+                                <span class="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider flex items-center"><i class="fa-solid fa-toolbox mr-1.5"></i> Recursos / Materiais & Aplicação</span>
+                                <p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed"><strong>Materiais:</strong> ${prop.recursos}<br><strong>Aplicação:</strong> ${prop.aplicacao}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- TOGGLE ACCORDION ---
+        function toggleAccordion(id) {
+            const el = document.getElementById(id);
+            const icon = document.getElementById(`icon-${id}`);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                if (icon) icon.style.transform = 'rotate(180deg)';
+            } else {
+                el.classList.add('hidden');
+                if (icon) icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        // --- REAL PDF GENERATOR USING jsPDF ---
+        function generatePDF(code, tema, objetivo, sugestao, orientacoes) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Header banner
+            doc.setFillColor(30, 41, 59); // Slate-900
+            doc.rect(0, 0, 210, 30, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("Apoio ao Professor - Planejamento BNCC", 15, 18);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("Documento Pedagógico Oficial", 150, 18);
+
+            // Content Body
+            doc.setTextColor(30, 30, 30);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text(`Tema: ${tema}`, 15, 45);
+
+            doc.setFontSize(11);
+            doc.setTextColor(80, 80, 80);
+            doc.text(`Código BNCC: ${code}`, 15, 53);
+
+            let y = 68;
+
+            // Box 1: Objetivo
+            doc.setFillColor(240, 249, 255);
+            doc.roundedRect(15, y, 180, 25, 3, 3, 'F');
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(15, 23, 42);
+            doc.text("Objetivo de Aprendizagem:", 20, y + 7);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            const splitObj = doc.splitTextToSize(objetivo, 170);
+            doc.text(splitObj, 20, y + 15);
+
+            y += 35;
+
+            // Box 2: Sugestão de Atividade
+            doc.setFillColor(240, 253, 244);
+            doc.roundedRect(15, y, 180, 30, 3, 3, 'F');
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42);
+            doc.text("Sugestão de Atividade Prática:", 20, y + 7);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            const splitSug = doc.splitTextToSize(sugestao, 170);
+            doc.text(splitSug, 20, y + 15);
+
+            y += 40;
+
+            // Box 3: Orientações
+            doc.setFillColor(254, 252, 232);
+            doc.roundedRect(15, y, 180, 30, 3, 3, 'F');
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(11);
+            doc.setTextColor(15, 23, 42);
+            doc.text("Orientações para o Professor:", 20, y + 7);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            const splitOri = doc.splitTextToSize(orientacoes, 170);
+            doc.text(splitOri, 20, y + 15);
+
+            // Footer
+            doc.setFontSize(9);
+            doc.setTextColor(150, 150, 150);
+            doc.text("Portal Apoio ao Professor • Gerado em conformidade com as diretrizes da BNCC.", 15, 285);
+
+            // Save PDF
+            doc.save(`Plano_BNCC_${code}.pdf`);
+        }
+    </script>
+
+
+
+<!-- VISUALIZADOR DOS MATERIAIS: arquivos individuais na mesma pasta -->
+<div id="material-viewer" style="display:none;position:fixed;inset:0;z-index:99999;background:#fff;flex-direction:column">
+  <div style="height:48px;min-height:48px;background:#0f172a;color:white;display:flex;align-items:center;padding:0 16px;gap:14px;font:600 14px Inter,Arial,sans-serif">
+    <button type="button" onclick="closeEmbeddedMaterial()" style="background:#2563eb;color:white;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:700">← Voltar ao Menu</button>
+    <span id="material-viewer-title">Material didático</span>
+  </div>
+  <iframe id="material-frame" title="Material didático" style="border:0;width:100%;height:calc(100% - 48px);background:white"></iframe>
+</div>
+<script>
+function closeEmbeddedMaterial() {
+  document.getElementById('material-frame').src = 'about:blank';
+  document.getElementById('material-viewer').style.display = 'none';
+  document.body.style.overflow = '';
+}
+</script>
+
+</body>
+</html>
